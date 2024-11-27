@@ -1,19 +1,47 @@
 from dataclasses import dataclass
 import json
 import argparse
-
 import requests
+
+@dataclass
+class Location:
+    lat: float
+    lng: float
+    address: str
+    city: str
+    country: str
+
+
+@dataclass
+class Amenities:
+    general: list[str]
+    room: list[str]
+
+
+@dataclass
+class Image:
+    link: str
+    description: str
+
+
+@dataclass
+class Images:
+    rooms: list[Image]
+    site: list[Image]
+    amenities: list[Image]
+
 
 @dataclass
 class Hotel:
     id: str
     destination_id: str
     name: str
-    description: str
     location: Location
+    description: str
     amenities: Amenities
     images: Images
     booking_conditions: list[str]
+
 
 class BaseSupplier:
     def endpoint():
@@ -31,16 +59,111 @@ class BaseSupplier:
 class Acme(BaseSupplier):
     @staticmethod
     def endpoint():
-        return 'https://5f2be0b4ffc88500167b85a0.mockapi.io/suppliers/acme'
+        return "https://5f2be0b4ffc88500167b85a0.mockapi.io/suppliers/acme"
 
     @staticmethod
     def parse(dto: dict) -> Hotel:
         return Hotel(
-            id=dto['Id'],
-            destination_id=dto['DestinationId'],
-            name=dto['Name'],
-  
+            id=dto["Id"],
+            destination_id=dto["DestinationId"],
+            name=dto["Name"],
+            location=Location(
+                lat=dto.get("Latitude", 0.0),
+                lng=dto.get("Longitude", 0.0),
+                address=dto.get("Address", ""),
+                city=dto.get("City", ""),
+                country=dto.get("Country", ""),
+            ),
+            description=dto.get("Description", ""),
+            amenities=Amenities(
+                general=dto.get("Facilities", []),
+                room=[],
+            ),
+            images=Images(
+                rooms=[],
+                site=[],
+                amenities=[],
+            ),
+            booking_conditions=[],
         )
+
+
+class Patagonia(BaseSupplier):
+    @staticmethod
+    def endpoint():
+        return "https://5f2be0b4ffc88500167b85a0.mockapi.io/suppliers/patagonia"
+
+    @staticmethod
+    def parse(dto: dict) -> Hotel:
+        return Hotel(
+            id=dto["id"],
+            destination_id=dto["destination"],
+            name=dto["name"],
+            location=Location(
+                lat=dto.get("lat", 0.0),
+                lng=dto.get("lng", 0.0),
+                address=dto.get("address", ""),
+                city=dto.get("city", ""),
+                country=dto.get("country", ""),
+            ),
+            description=dto.get("info", ""),
+            amenities=Amenities(
+                general=dto.get("amenities", []),
+                room=dto["amenities"],
+            ),
+            images=Images(
+                rooms=[
+                    Image(link=image["url"], description=image.get("description", ""))
+                    for image in dto["images"].get("rooms", [])
+                ],
+                site=[],
+                amenities=[
+                    Image(link=image["url"], description=image.get("description", ""))
+                    for image in dto["images"].get("amenities", [])
+                ],
+            ),
+            booking_conditions=[],
+        )
+
+
+class Paperflies(BaseSupplier):
+    @staticmethod
+    def endpoint():
+        return "https://5f2be0b4ffc88500167b85a0.mockapi.io/suppliers/paperflies"
+
+    @staticmethod
+    def parse(dto: dict) -> Hotel:
+        return Hotel(
+            id=dto["hotel_id"],
+            destination_id=dto["destination_id"],
+            name=dto["hotel_name"],
+            location=Location(
+                lat=dto.get("Latitude", 0.0),
+                lng=dto.get("Longitude", 0.0),
+                address=dto.get("location", {}).get("address", ""),
+                city=dto.get("City", ""),
+                country=dto.get("location", {}).get("country", ""),
+            ),
+            description=dto.get("details", ""),
+            amenities=Amenities(
+                general=dto.get("amenities", {}).get("general", []),
+                room=dto.get("amenities", {}).get("room", []),
+            ),
+            images=Images(
+                rooms=[
+                    Image(link=image["link"], description=image.get("caption", ""))
+                    for image in dto["images"].get("rooms", [])
+                ],
+                site=[
+                    Image(link=image["link"], description=image.get("caption", ""))
+                    for image in dto["images"].get("site", [])
+                ],
+                amenities=[],
+            ),
+            booking_conditions=dto["booking_conditions"],
+        )
+
+
 
 
 def fetch_hotels(hotel_ids, destination_ids):
@@ -52,20 +175,22 @@ def fetch_hotels(hotel_ids, destination_ids):
         Patagonia(),
     ]
 
+
     # Fetch data from all suppliers
     all_supplier_data = []
     for supp in suppliers:
-        all_supplier_data.extend(...)
+        supplier_data = supp.fetch() 
+        all_supplier_data.extend(supplier_data)
 
     # Merge all the data and save it in-memory somewhere
-    svc = HotelsService()
-    svc.merge_and_save(all_supplier_data)
+    # svc = HotelsService()
+    # svc.merge_and_save(all_supplier_data)
 
-    # Fetch filtered data
-    filtered = svc.find(hotel_ids, destination_ids)
+    # # Fetch filtered data
+    # filtered = svc.find(hotel_ids, destination_ids)
 
     # Return as json
-    return json.dumps()
+    return json.dumps(all_supplier_data[0], default=vars, indent=2) 
     
 def main():
     parser = argparse.ArgumentParser()
