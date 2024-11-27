@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from utils.data_cleaning import trim, remove_special_chars, upper_and_trim
 import json
 import argparse
 import requests
@@ -66,15 +67,15 @@ class Acme(BaseSupplier):
         return Hotel(
             id=dto["Id"],
             destination_id=dto["DestinationId"],
-            name=dto["Name"],
+            name=trim(dto["Name"]),
             location=Location(
-                lat=dto.get("Latitude", 0.0),
-                lng=dto.get("Longitude", 0.0),
-                address=dto.get("Address", ""),
-                city=dto.get("City", ""),
-                country=dto.get("Country", ""),
+            lat=float(dto.get("Latitude", 0.0) or 0.0),  # Convert to float or default to 0.0
+            lng=float(dto.get("Longitude", 0.0) or 0.0),  # Convert to float or default to 0.0
+                address=upper_and_trim(dto.get("Address", "")),
+                city=upper_and_trim(dto.get("City", "")),
+                country=upper_and_trim(dto.get("Country", "")),
             ),
-            description=dto.get("Description", ""),
+            description=remove_special_chars(dto.get("Description", "")),
             amenities=Amenities(
                 general=dto.get("Facilities", []),
                 room=[],
@@ -100,8 +101,8 @@ class Patagonia(BaseSupplier):
             destination_id=dto["destination"],
             name=dto["name"],
             location=Location(
-                lat=dto.get("lat", 0.0),
-                lng=dto.get("lng", 0.0),
+            lat=float(dto.get("Latitude", 0.0) or 0.0),  # Convert to float or default to 0.0
+            lng=float(dto.get("Longitude", 0.0) or 0.0),  # Convert to float or default to 0.0
                 address=dto.get("address", ""),
                 city=dto.get("city", ""),
                 country=dto.get("country", ""),
@@ -138,8 +139,8 @@ class Paperflies(BaseSupplier):
             destination_id=dto["destination_id"],
             name=dto["hotel_name"],
             location=Location(
-                lat=dto.get("Latitude", 0.0),
-                lng=dto.get("Longitude", 0.0),
+            lat=float(dto.get("Latitude", 0.0) or 0.0),  # Convert to float or default to 0.0
+            lng=float(dto.get("Longitude", 0.0) or 0.0),  # Convert to float or default to 0.0
                 address=dto.get("location", {}).get("address", ""),
                 city=dto.get("City", ""),
                 country=dto.get("location", {}).get("country", ""),
