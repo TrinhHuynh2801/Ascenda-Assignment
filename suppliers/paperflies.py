@@ -36,5 +36,5 @@ class Paperflies(BaseSupplier):
                 ],
                 amenities=[],
             ),
-            booking_conditions=dto["booking_conditions"],
+            booking_conditions=dto["booking_conditions"] or [],
         )

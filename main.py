@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from services.hotels_service import HotelsService
 from suppliers.acme import Acme
 from suppliers.patagonia import Patagonia
@@ -21,16 +20,15 @@ def fetch_hotels(hotel_ids, destination_ids):
     for supp in suppliers:
         supplier_data = supp.fetch() 
         all_supplier_data.extend(supplier_data)
-
     # Merge all the data and save it in-memory somewhere
     svc = HotelsService()
     svc.merge_and_save(all_supplier_data)
-
+    
     # # Fetch filtered data
     filtered = svc.find(hotel_ids, destination_ids)
 
     # Return as json
-    return json.dumps(all_supplier_data, default=vars, indent=2) 
+    # return json.dumps(all_supplier_data, default=vars, indent=2) 
     
 def main():
     parser = argparse.ArgumentParser()
