@@ -1,6 +1,9 @@
 from models.hotels import Hotel,Amenities,Images,Location,Image
 from utils.data_select import *
 class HotelsService:  
+    def __init__(self):
+        self.hotel_data = []
+        
     def select_best_data(self, mergedHotel):
         best_hotels_data = []
         for hotel in mergedHotel:
@@ -87,8 +90,16 @@ class HotelsService:
                 # Merge booking conditions
                 existing_hotel["booking_conditions"] += hotel.booking_conditions
         # Return the values of the hotels_map dictionary as a list
-        return (hotels_map.values())
+        self.hotel_data = self.select_best_data(hotels_map.values())
 
 
     def find(self, hotel_ids, destination_ids):
-        return
+        if hotel_ids == 'none' or destination_ids == 'none':
+            return self.hotel_data
+        filtered_hotels = [
+            hotel for hotel in self.hotel_data
+            if (hotel.id in hotel_ids) and (str(hotel.destination_id) in destination_ids)
+        ]   
+        # Sort hotels based on the order of hotelIds or destinationIds, preserving the order
+        filtered_hotels.sort(key=lambda hotel: hotel_ids.index(hotel.id))
+        return filtered_hotels

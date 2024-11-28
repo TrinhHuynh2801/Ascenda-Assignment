@@ -7,14 +7,11 @@ import argparse
 
 def fetch_hotels(hotel_ids, destination_ids):
     # Write your code here
-
     suppliers = [
         Acme(),
         Paperflies(),
         Patagonia(),
     ]
-
-
     # Fetch data from all suppliers
     all_supplier_data = []
     for supp in suppliers:
@@ -22,14 +19,11 @@ def fetch_hotels(hotel_ids, destination_ids):
         all_supplier_data.extend(supplier_data)
     # Merge all the data and save it in-memory somewhere
     svc = HotelsService()
-    mergered = svc.merge_and_save(all_supplier_data)
-    # Select best hotel data list
-    selected = svc.select_best_data(mergered)
+    svc.merge_and_save(all_supplier_data)
     #  Fetch filtered data
     filtered = svc.find(hotel_ids, destination_ids)
-
     # Return as json
-    return json.dumps(selected, default=vars, indent=2) 
+    return json.dumps(filtered, default=vars, indent=2) 
     
 def main():
     parser = argparse.ArgumentParser()
