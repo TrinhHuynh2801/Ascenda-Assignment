@@ -22,13 +22,14 @@ def fetch_hotels(hotel_ids, destination_ids):
         all_supplier_data.extend(supplier_data)
     # Merge all the data and save it in-memory somewhere
     svc = HotelsService()
-    svc.merge_and_save(all_supplier_data)
-    
-    # # Fetch filtered data
+    mergered = svc.merge_and_save(all_supplier_data)
+    # Select best hotel data list
+    selected = svc.select_best_data(mergered)
+    #  Fetch filtered data
     filtered = svc.find(hotel_ids, destination_ids)
 
     # Return as json
-    # return json.dumps(all_supplier_data, default=vars, indent=2) 
+    return json.dumps(selected, default=vars, indent=2) 
     
 def main():
     parser = argparse.ArgumentParser()

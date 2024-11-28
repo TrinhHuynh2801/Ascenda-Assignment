@@ -1,6 +1,35 @@
-class HotelsService:
-    def __init__(self):
-        self.hotels = [];    
+from models.hotels import Hotel,Amenities,Images,Location,Image
+from utils.data_select import *
+class HotelsService:  
+    def select_best_data(self, mergedHotel):
+        best_hotels_data = []
+        for hotel in mergedHotel:
+            best_hotel = Hotel(
+                id=hotel["id"],
+                destination_id=hotel["destination_id"],
+                name=max(hotel["name"], key=len, default=""),  # Choose the longest name
+                location=Location(
+                    lat=hotel["location"]["lat"],
+                    lng=hotel["location"]["lng"],
+                    address=select_most_occurrence(hotel["location"]["address"]),  
+                    city=select_most_occurrence(hotel["location"]["city"]),
+                    country=select_most_occurrence(hotel["location"]["country"]),
+                ),
+                description=max(hotel["description"], key=len, default=""),
+                amenities=Amenities(
+                    general=select_amenities(hotel["amenities"]["general"]),  
+                    room= select_amenities(hotel["amenities"]["room"]),
+                ),
+                images=Images(
+                    rooms=select_images(hotel["images"]["rooms"]),
+                    site=select_images(hotel["images"]["site"]),
+                    amenities=select_images(hotel["images"]["amenities"])
+                ),
+                booking_conditions=select_book_condition(hotel["booking_conditions"])
+            ),
+            best_hotels_data.extend(best_hotel)
+        return best_hotels_data
+
     def merge_and_save(self, supplier_data): 
         hotels_map = {}
         for hotel in supplier_data:
@@ -58,8 +87,8 @@ class HotelsService:
                 # Merge booking conditions
                 existing_hotel["booking_conditions"] += hotel.booking_conditions
         # Return the values of the hotels_map dictionary as a list
-        print(hotels_map.values())
-        return list(hotels_map.values())
+        return (hotels_map.values())
+
 
     def find(self, hotel_ids, destination_ids):
         return
